@@ -1,19 +1,15 @@
 <script lang="ts">
 	import '../app.css';
 	import favicon from '$lib/assets/favicon.svg';
-	import NavBar from '$lib/components/NavBar.svelte';
+	import HeadBar from '$lib/components/HeaderBar.svelte';
 	import Footer from '$lib/components/Footer.svelte';
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
-	import { isLoggedIn, loadAuth } from '$lib/api';
-
+	import { auth } from '$lib/auth.svelte';
 	let { children } = $props();
-	export const ssr = false;
 
 	onMount(() => {
-		loadAuth();
-
-		if (!isLoggedIn() && location.pathname !== '/login') {
+		if (!auth.isAuthenticated && location.pathname !== '/login') {
 			goto('/login');
 		} else {
 			if (location.pathname === '/login') {
@@ -26,9 +22,11 @@
 <svelte:head>
 	<link rel="icon" href={favicon} />
 </svelte:head>
-<div class="flex h-screen flex-col">
+<div
+	class="relative mx-auto flex min-h-screen w-full flex-col overflow-x-hidden bg-white/80 shadow-2xl dark:bg-slate-900/80"
+>
 	<header>
-		<NavBar />
+		<HeadBar />
 	</header>
 
 	<main class="flex-1 p-1">
@@ -37,6 +35,3 @@
 
 	<Footer />
 </div>
-
-<style>
-</style>
