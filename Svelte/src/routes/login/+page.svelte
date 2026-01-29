@@ -32,13 +32,6 @@
 		auth.setTokens(data?.token!, data.refresh!);
 		goto('/');
 	}
-
-	function preventDefault(fn: (event: Event) => void) {
-		return function (event: Event) {
-			event.preventDefault();
-			fn.call(this, event);
-		};
-	}
 </script>
 
 <div
@@ -55,7 +48,7 @@
 		</div>
 		<p class="{errorMessage ? 'block' : 'hidden'} mb-6 text-center text-md bg-red-600 px-4 py-2 rounded-xl  w-full text-white">{errorMessage}</p>
 		<div class="w-full space-y-4">
-			<form onsubmit={preventDefault(submit)}>
+			<form onsubmit={(e) => {e.preventDefault(); submit()}}>
 				<div class="space-y-1.5">
 					<label
 						class="text-plum-muted px-1 text-xs font-medium tracking-wider uppercase"
