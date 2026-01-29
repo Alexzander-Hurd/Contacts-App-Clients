@@ -49,7 +49,6 @@
 <div
 	class="relative mx-auto flex min-h-screen w-full flex-col overflow-x-hidden bg-white/80 shadow-2xl dark:bg-slate-900/80"
 >
-	ui
 	{#if page.url.pathname !== '/login'}
 		<header>
 			<HeadBar />
