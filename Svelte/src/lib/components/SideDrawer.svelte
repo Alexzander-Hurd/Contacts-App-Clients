@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { auth } from '$lib/auth.svelte';
-	import { sidebar } from '$lib/ui.svelte';
+	import { ui } from '$lib/ui.svelte';
 	import type { components } from '$lib/api/schema';
 	import { client } from '$lib/api/api';
 
@@ -21,7 +21,7 @@
 	});
 
 	$effect(() => {
-		document.body.style.overflow = sidebar.open ? 'hidden' : 'auto';
+		document.body.style.overflow = ui.sidebarOpen ? 'hidden' : 'auto';
 	});
 </script>
 
@@ -60,7 +60,7 @@
 				onclick={() => 
 					{
 						auth.logout();
-						sidebar.close();
+						ui.closeSidebar();
 					}
 				}
 				class="w-full text-xl font-bold text-white"

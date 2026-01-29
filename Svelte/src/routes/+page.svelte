@@ -4,6 +4,7 @@
 	import { onMount } from 'svelte';
 	import { client } from '$lib/api/api';
 	import type { components } from '$lib/api/schema';
+	import { ui } from '$lib/ui.svelte';
 
 	type Contact = components['schemas']['Contact'];
 
@@ -51,6 +52,8 @@
 		} else {
 			favourites = fData.sort((a, b) => a.name!.localeCompare(b.name!));
 		}
+
+		ui.setBusy(false);
 	});
 
 </script>

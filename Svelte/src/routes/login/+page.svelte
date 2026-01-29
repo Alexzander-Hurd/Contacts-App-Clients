@@ -2,12 +2,15 @@
 	import { client } from '$lib/api/api';
 	import { auth } from '$lib/auth.svelte';
 	import { goto } from '$app/navigation';
+	import { ui } from '$lib/ui.svelte';
 
 	let username = $state('');
 	let password = $state('');
 	let errorMessage = $state('');
+	let isLoading = $state(false);
 
 	async function submit() {
+		isLoading = true;
 		const { data, error } = await client.POST('/login', {
 			body: {
 				username,
@@ -16,6 +19,7 @@
 		});
 
 		if (error) {
+			isLoading = false;
 			console.error(
 				'Login error:',
 				error.message ? error.message : error ? error : 'Unknown error'
@@ -25,11 +29,15 @@
 		}
 
 		if (data === null || data === undefined) {
+			isLoading = false;
 			console.error('No data received');
+			errorMessage = 'Login failed. Please try again.';
 			return;
 		}
 
 		auth.setTokens(data?.token!, data.refresh!);
+		isLoading = false
+		ui.setBusy(true);
 		goto('/');
 	}
 </script>
@@ -46,9 +54,20 @@
 			</div>
 			<h1 class="text-2xl font-semibold tracking-tight text-white">Connections</h1>
 		</div>
-		<p class="{errorMessage ? 'block' : 'hidden'} mb-6 text-center text-md bg-red-600 px-4 py-2 rounded-xl  w-full text-white">{errorMessage}</p>
+		<p
+			class="{errorMessage
+				? 'block'
+				: 'hidden'} text-md mb-6 w-full rounded-xl bg-red-600 px-4 py-2 text-center text-white"
+		>
+			{errorMessage}
+		</p>
 		<div class="w-full space-y-4">
-			<form onsubmit={(e) => {e.preventDefault(); submit()}}>
+			<form
+				onsubmit={(e) => {
+					e.preventDefault();
+					submit();
+				}}
+			>
 				<div class="space-y-1.5">
 					<label
 						class="text-plum-muted px-1 text-xs font-medium tracking-wider uppercase"
@@ -79,9 +98,18 @@
 				</div>
 				<div class="pt-6">
 					<button
-						class="shadow-primary/25 h-14 w-full rounded-xl bg-purple-800 font-semibold text-white shadow-lg transition-all active:scale-[0.98] dark:bg-purple-600"
+						disabled={isLoading}
+						class="shadow-primary/25 relative flex h-14 w-full items-center justify-center gap-2
+						rounded-xl bg-purple-800 py-3 font-semibold text-white transition-all
+						hover:scale-[1.05] hover:bg-purple-600 active:scale-[0.98] disabled:opacity-70
+						dark:bg-purple-600 hover:dark:bg-purple-500"
 					>
-						Log In
+						{#if isLoading}
+							<span class="material-symbols-outlined animate-spin">progress_activity</span>
+							Logging in...
+						{:else}
+							Log In
+						{/if}
 					</button>
 				</div>
 			</form>

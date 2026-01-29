@@ -1,13 +1,18 @@
 class UIState {
-    public open = $state(false);
+	public sidebarOpen = $state(false);
+	public isBusy = $state(false);
 
-    public toggle() {
-        this.open = !this.open;
-    }
+	public toggleSidebar() {
+		this.sidebarOpen = !this.sidebarOpen;
+	}
 
-    public close() {
-        this.open = false;
-    }
+	public closeSidebar() {
+		this.sidebarOpen = false;
+	}
+
+	public setBusy(val: boolean) {
+		this.isBusy = val;
+	}
 }
 
-export const sidebar = new UIState();
+export const ui = new UIState();
