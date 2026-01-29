@@ -8,7 +8,11 @@ export default {
 				'background-light': '#f3f0f7',
 				'background-dark': '#1a0f1f',
 				'card-light': '#ffffff',
-				'card-dark': '#2d1b36'
+				'card-dark': '#2d1b36',
+				'plum-dark': '#1a0f1f',
+				'plum-light': '#f3f0f7',
+				'plum-muted': '#a394aa',
+				'plum-border': '#7e22ce'
 			},
 			fontFamily: {
 				display: ['Inter']
