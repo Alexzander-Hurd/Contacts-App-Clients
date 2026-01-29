@@ -4,35 +4,36 @@ import { auth } from '$lib/auth.svelte';
 
 const baseUrl = 'http://localhost:5010';
 
-let refreshPromise: Promise<string | null > | null = null;
+let refreshPromise: Promise<string | null> | null = null;
 
 const customFetch: typeof fetch = async (request, options) => {
-	console.log('Custom fetch called for', request);
 
-	// Attach access token if available
-	if (auth.accessToken) {
-		console.log('Got access token');
-		const headers = new Headers(options?.headers);
-		headers.set('Authorization', `Bearer ${auth.accessToken}`);
-		options = { ...options, headers };
+	let headers = new Headers();
+
+	if (request instanceof Request) {
+		request.headers.forEach((value, key) => headers.set(key, value));
 	}
 
-	console.log('Making request to', request);
+	if (options?.headers) {
+		new Headers(options.headers).forEach((value, key) => headers.set(key, value));
+	}
+
+	//Attach access token if available
+	if (auth.accessToken) {
+		headers.set('Authorization', `Bearer ${auth.accessToken}`);
+	}
+
+	options = { ...options, headers };
 	const response = await fetch(request, options);
 
-	console.log('Response status:', response.status);
-	console.log('Response headers:', Array.from(response.headers.entries()));
-	console.log('Response body:', await response.clone().text() ?? 'No body');
-
 	if (response.status !== 401) {
-		console.log('Got response with status', response.status);
 		// Not a 401, return original response
 		return response;
 	}
-	
+
 	// Handle 401 - try refresh if possible
 	if (!auth.refreshToken) {
-		console.log('No refresh token');
+		console.log('No refresh token - Logout');
 		auth.logout();
 		return response;
 	}
@@ -46,7 +47,7 @@ const customFetch: typeof fetch = async (request, options) => {
 	refreshPromise = null;
 
 	if (!newAccessToken) {
-		console.log('Refresh failed');
+		console.log('Refresh failed - Logout');
 		auth.logout();
 		return response;
 	}
@@ -54,16 +55,15 @@ const customFetch: typeof fetch = async (request, options) => {
 	console.log('Got new access token');
 
 	// Retry original request with new token
-	const headers = new Headers(options?.headers);
-	headers.set('Authorization', `Bearer ${newAccessToken}`);
+	headers = new Headers(options?.headers);
+	headers.append('Authorization', `Bearer ${newAccessToken}`);
 	options = { ...options, headers };
 
 	return await fetch(request, options);
-}
+};
 
 async function refreshRequest(refreshToken: string): Promise<string | null> {
 	try {
-
 		console.log('Attempting token refresh');
 		const response = await fetch(`${baseUrl}/refresh?refreshToken=${refreshToken}`, {
 			method: 'POST',
@@ -91,11 +91,6 @@ async function refreshRequest(refreshToken: string): Promise<string | null> {
 }
 
 export const client = createClient<paths>({
-	baseUrl:baseUrl,
+	baseUrl: baseUrl,
 	fetch: customFetch
 });
-
-
-
-
-
