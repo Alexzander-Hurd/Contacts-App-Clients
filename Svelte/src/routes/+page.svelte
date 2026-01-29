@@ -103,6 +103,60 @@
 
 		contacts = [...contacts, data].sort((a, b) => a.name!.localeCompare(b.name!));
 	}
+
+	async function toggleFavorite(contact: Contact) {
+		let state = isFavorite(contact) ? false : true;
+
+		if (state) {
+			favourites = [...favourites, contact].sort((a, b) => a.name!.localeCompare(b.name!));
+			const { data, error } = await client.POST(`/contacts/favorites/{id}`, {
+				body: undefined,
+				params: {
+					path: {
+						id: contact.id!
+					}
+				}
+			});
+			if (error || data === null || data === undefined) {
+				console.error('Toggle favorite error:');
+				if (state) {
+					favourites = favourites.filter((f) => f.id !== contact.id);
+				} else {
+					favourites = [...favourites, contact].sort((a, b) => a.name!.localeCompare(b.name!));
+				}
+				return;
+			}
+		} else {
+			favourites = favourites.filter((f) => f.id !== contact.id);
+			const { data, error } = await client.DELETE(`/contacts/favorites/{id}`, {
+				body: undefined,
+				params: {
+					path: {
+						id: contact.id!
+					}
+				}
+			});
+			if (error || data === null || data === undefined) {
+				console.error('Toggle favorite error:');
+				if (state) {
+					favourites = favourites.filter((f) => f.id !== contact.id);
+				} else {
+					favourites = [...favourites, contact].sort((a, b) => a.name!.localeCompare(b.name!));
+				}
+				return;
+			}
+		}
+	}
+
+	function isFavorite(contact: Contact) {
+		const exists: Contact | null | undefined = favourites.find((f) => f.id === contact.id);
+
+		if (exists !== undefined && exists !== null) {
+			return true;
+		} else {
+			return false;
+		}
+	}
 </script>
 
 <div
@@ -171,7 +225,21 @@
 
 		<div class="flex flex-col">
 			{#each group.members as contact (contact.id)}
-				<ContactCard {contact} />
+				<div class="align-center flex flex-row items-center justify-between gap-4 px-4 py-3">
+					<ContactCard {contact} />
+					<button
+						onclick={() => toggleFavorite(contact)}
+						class="p-2 transition-transform active:scale-75"
+					>
+						<span
+							class="material-symbols-outlined text-[24px] transition-colors duration-300
+            {isFavorite(contact) ? 'fill-current text-[#fa5118]' : 'text-gray-500'}"
+							style={isFavorite(contact) ? 'font-variation-settings: "FILL" 1' : ''}
+						>
+							star
+						</span>
+					</button>
+				</div>
 			{/each}
 		</div>
 	{/each}

@@ -19,7 +19,7 @@ const customFetch: typeof fetch = async (request, options) => {
 	}
 
 	//Attach access token if available
-	if (auth.accessToken) {
+	if (auth.accessToken && !headers.has('Authorization')) {
 		headers.set('Authorization', `Bearer ${auth.accessToken}`);
 	}
 
