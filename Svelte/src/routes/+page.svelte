@@ -59,10 +59,10 @@
 	class="bg-white/80/80 dark:bg-slate-900/80/80 sticky top-0 z-20 px-4 pt-6 pb-2 backdrop-blur-md"
 >
 	<div class="flex h-12 items-center justify-between">
-		<h1 class="text-3xl font-bold tracking-tight text-[#0d141b] dark:text-white">Contacts</h1>
+		<h1 class="text-3xl font-bold justify-center align-center tracking-tight text-[#0d141b] dark:text-white">Contacts</h1>
 		<div class="flex gap-2">
-			<button class="rounded-full p-2 hover:bg-purple-100 dark:hover:bg-purple-900/30">
-				<span class="material-symbols-outlined text-primary">add</span>
+			<button class="rounded-full p-2 m-auto justify-center align-center hover:scale-110 hover:bg-purple-500 active:scale-95 active:bg-purple-600 transition-transform">
+				<span class="material-symbols-outlined text-primary justify-center align-center">add</span>
 			</button>
 		</div>
 	</div>
@@ -71,8 +71,8 @@
 <div class="px-4 py-2">
 	<label class="flex h-11 w-full min-w-40 flex-col">
 		<div class="flex h-full w-full flex-1 items-stretch rounded-xl bg-[#ede7f3] dark:bg-[#3d2a48]">
-			<div class="flex items-center justify-center rounded-l-xl pl-4 text-[#715d7a]">
-				<span class="material-symbols-outlined text-[20px]">search</span>
+			<div class="flex items-center align-center justify-center rounded-l-xl pl-4 text-[#715d7a]">
+				<span class="align-center justify-center material-symbols-outlined text-[20px]">search</span>
 			</div>
 			<input
 				class="form-input flex h-full w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl border-none bg-transparent px-3 text-base leading-normal font-normal text-[#0d141b] placeholder:text-[#715d7a] focus:ring-0 focus:outline-0 dark:text-slate-100"
@@ -119,7 +119,7 @@
 	{/each}
 </div>
 <button
-	class="bg-primary fixed right-6 bottom-24 z-30 flex h-14 w-14 items-center justify-center rounded-full text-white shadow-lg shadow-purple-500/20 transition-transform active:scale-95"
+	class="bg-primary fixed right-6 bottom-24 z-30 flex h-14 w-14 items-center justify-center rounded-full text-white shadow-lg shadow-purple-500/20 transition-transform active:scale-95 active:bg-purple-600 hover:scale-110 hover:bg-purple-500"
 >
 	<span class="material-symbols-outlined text-[28px]">person_add</span>
 </button>
