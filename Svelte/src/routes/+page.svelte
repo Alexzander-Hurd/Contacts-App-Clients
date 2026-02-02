@@ -223,7 +223,6 @@
 		showForm = true;
 	}
 
-
 	async function handleDelete() {
 		if (!deleteConfirm) {
 			deleteConfirm = true;
@@ -313,24 +312,36 @@
 		<div class="flex flex-col">
 			{#each group.members as contact (contact.id)}
 				<div class="align-center flex flex-row items-center justify-between gap-4 px-4 py-3">
-					<button
+					<div
+						role="button"
+						tabindex="0"
+						onkeydown={(e) => {
+							if (e.key === 'Enter' || e.key === ' ') {
+								e.preventDefault(); // Prevent scrolling when pressing Space
+								openEdit(contact);
+							}
+						}}
 						onclick={() => openEdit(contact)}
 						class="mb-3 flex w-full items-center justify-between rounded-xl bg-white/5 p-4 text-left transition-colors hover:bg-white/10"
 					>
 						<ContactCard {contact} />
-					</button>
-					<button
-						onclick={() => toggleFavorite(contact)}
-						class="p-2 transition-transform active:scale-75"
-					>
-						<span
-							class="material-symbols-outlined text-[24px] transition-colors duration-300
-            				{isFavorite(contact) ? 'fill-current text-[#fa5118]' : 'text-gray-500'}"
-							style={isFavorite(contact) ? 'font-variation-settings: "FILL" 1' : ''}
+
+						<button
+							onclick={(e) => {
+								e.stopPropagation();
+								toggleFavorite(contact)
+							}}
+							class="p-2 transition-transform active:scale-75"
 						>
-							star
-						</span>
-					</button>
+							<span
+								class="material-symbols-outlined text-[24px] transition-colors duration-300
+            				{isFavorite(contact) ? 'fill-current text-[#fa5118]' : 'text-gray-500'}"
+								style={isFavorite(contact) ? 'font-variation-settings: "FILL" 1' : ''}
+							>
+								star
+							</span>
+						</button>
+					</div>
 				</div>
 			{/each}
 		</div>
