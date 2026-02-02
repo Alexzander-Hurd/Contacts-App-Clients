@@ -25,7 +25,6 @@ class UIState {
 	}
 
 	public toggleTheme() {
-		console.log('toggleTheme');
 		this.theme = this.theme === 'light' ? 'dark' : 'light';
 		localStorage.setItem('theme', this.theme);
 	}

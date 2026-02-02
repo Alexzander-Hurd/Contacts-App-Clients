@@ -10,10 +10,6 @@
 	let lastName = contact.name?.split(' ')[1] || '';
 
 	onMount(async () => {
-		// You can fetch more details about the contact here if needed
-
-		// For now, let's just log the contact
-		console.log(contact);
 	});
 </script>
 
