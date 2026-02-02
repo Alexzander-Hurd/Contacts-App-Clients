@@ -24,4 +24,5 @@
 		{firstName.charAt(0)}{lastName.charAt(0)}
 	</div>
 	<p class="text-xs font-medium text-[#0d141b] dark:text-slate-300">{contact.name}</p>
+	<p class="text-xs text-slate-500 dark:text-slate-400">{contact.extension}</p>
 </div>

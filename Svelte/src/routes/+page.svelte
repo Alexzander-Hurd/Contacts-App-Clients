@@ -246,7 +246,7 @@
 </div>
 <button
 	onclick={() => (showForm = true)}
-	class="bg-primary fixed right-6 bottom-24 z-30 flex h-18 w-18 items-center justify-center rounded-full text-white shadow-lg shadow-purple-500/20 transition-transform hover:scale-110 hover:bg-purple-500 active:scale-95 active:bg-purple-600"
+	class="bg-primary fixed right-6 bottom-24 z-30 flex h-18 w-18 items-center justify-center rounded-full text-black dark:text-slate-300 shadow-lg shadow-purple-500/20 transition-transform hover:scale-110 hover:bg-purple-500 active:scale-95 active:bg-purple-600"
 >
 	<span class="material-symbols-outlined text-[42px]">person_add</span>
 </button>

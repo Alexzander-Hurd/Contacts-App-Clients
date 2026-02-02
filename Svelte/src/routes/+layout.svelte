@@ -41,6 +41,20 @@
 	$effect(() => {
 		document.body.style.overflow = ui.sidebarOpen ? 'hidden' : 'auto';
 	});
+
+	$effect(() => {
+		if (typeof window !== 'undefined') {
+			const html = document.documentElement;
+			if (ui.theme === 'dark') {
+				html.classList.remove('light');
+				html.classList.add('dark');
+			}
+			else {
+				html.classList.remove('dark');
+				html.classList.add('light');
+			}
+		}
+	});
 </script>
 
 <svelte:head>
@@ -68,10 +82,10 @@
 			></button>ui
 
 			<aside
-				class="fixed top-0 right-0 z-[70] h-full w-72 bg-[#1a161f] shadow-2xl"
+				class="fixed top-0 right-0 z-[70] h-full w-72 bg-[#faf5ff] dark:bg-[#1a161f] shadow-2xl"
 				transition:fly={{ x: 300, duration: 300 }}
 			>
-				<SideDrawer></SideDrawer>
+				<SideDrawer userContact={userContact} firstName={firstName} lastName={lastName}></SideDrawer>
 			</aside>
 		{/if}
 
