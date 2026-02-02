@@ -9,14 +9,24 @@
 	import { fade, fly } from 'svelte/transition';
 
 	type Contact = components['schemas']['Contact'];
+
 	type NewContact = components['schemas']['ContactDTO'];
 
-	let newContact: NewContact = $state({
+	const newContact: Contact = {
+		id: '',
 		name: '',
 		email: '',
 		extension: ''
-	} as Contact);
+	};
+
+	let formContact: Contact = $state({
+		id: '',
+		name: '',
+		email: '',
+		extension: ''
+	});
 	let showForm: boolean = $state(false);
+	let deleteConfirm = $state(false);
 	let errorMessage: string = $state('');
 	let isLoading: boolean = $state(false);
 	let contacts: Contact[] = $state([]);
@@ -72,36 +82,79 @@
 
 	async function submit() {
 		isLoading = true;
-		const { data, error } = await client.POST('/contacts', {
-			body: newContact
-		});
 
-		if (error) {
-			isLoading = false;
-			console.error(
-				'Add contact error:',
-				error.message ? error.message : error ? error : 'Unknown error'
-			);
-			errorMessage = error.message || 'Operation failed. Please try again.';
-			return;
-		}
-
-		if (data === null || data === undefined) {
-			isLoading = false;
-			console.error('No data received');
-			errorMessage = 'Operation failed. Please try again.';
-			return;
-		}
-
-		newContact = {
-			name: '',
-			email: '',
-			extension: ''
+		const payload: NewContact = {
+			name: formContact.name,
+			email: formContact.email,
+			extension: formContact.extension
 		};
-		showForm = false;
-		isLoading = false;
 
-		contacts = [...contacts, data].sort((a, b) => a.name!.localeCompare(b.name!));
+		if (formContact.id === '') {
+			const { data, error } = await client.POST('/contacts', {
+				body: payload
+			});
+			if (error) {
+				isLoading = false;
+				console.error(
+					'Add contact error:',
+					error.message ? error.message : error ? error : 'Unknown error'
+				);
+				errorMessage = error.message || 'Operation failed. Please try again.';
+				return;
+			}
+
+			if (data === null || data === undefined) {
+				isLoading = false;
+				console.error('No data received');
+				errorMessage = 'Operation failed. Please try again.';
+				return;
+			}
+
+			formContact = { ...newContact }; // Clear data
+			showForm = false;
+			isLoading = false;
+
+			contacts = [...contacts, data].sort((a, b) => a.name!.localeCompare(b.name!));
+		} else {
+			const { data, error } = await client.PUT(`/contacts/{id}`, {
+				body: payload,
+				params: {
+					path: {
+						id: formContact.id!
+					}
+				}
+			});
+			if (error) {
+				isLoading = false;
+				console.error(
+					'Update contact error:',
+					error.message ? error.message : error ? error : 'Unknown error'
+				);
+				errorMessage = error.message || 'Operation failed. Please try again.';
+				return;
+			}
+
+			if (data === null || data === undefined) {
+				isLoading = false;
+				console.error('No data received');
+				errorMessage = 'Operation failed. Please try again.';
+				return;
+			}
+
+			formContact = { ...newContact }; // Clear data
+			showForm = false;
+			isLoading = false;
+
+			contacts = contacts
+				.map((c) => {
+					if (c.id === data.id) {
+						return data;
+					} else {
+						return c;
+					}
+				})
+				.sort((a, b) => a.name!.localeCompare(b.name!));
+		}
 	}
 
 	async function toggleFavorite(contact: Contact) {
@@ -157,6 +210,40 @@
 			return false;
 		}
 	}
+
+	function openAdd() {
+		formContact = { ...newContact }; // Clear data
+		showForm = true;
+	}
+
+	// 3. Helper to open "Edit Mode"
+	function openEdit(contact: Contact) {
+		// Clone the data so we don't mutate the list row while typing
+		formContact = { ...contact };
+		showForm = true;
+	}
+
+
+	async function handleDelete() {
+		if (!deleteConfirm) {
+			deleteConfirm = true;
+			// Reset confirmation if they don't click again within 3 seconds
+			setTimeout(() => (deleteConfirm = false), 3000);
+			return;
+		}
+
+		// Actual Delete
+		const { error } = await client.DELETE('/contacts/{id}', {
+			params: { path: { id: formContact.id! } }
+		});
+
+		if (!error) {
+			// Remove from local list
+			contacts = contacts.filter((c) => c.id !== formContact.id);
+			// ui.triggerToast('Contact deleted', 'success');
+			showForm = false;
+		}
+	}
 </script>
 
 <div
@@ -170,7 +257,7 @@
 		</h1>
 		<div class="flex gap-2">
 			<button
-				onclick={() => (showForm = true)}
+				onclick={openAdd}
 				class="align-center m-auto justify-center rounded-full p-2 transition-transform hover:scale-110 hover:bg-purple-500 active:scale-95 active:bg-purple-600"
 			>
 				<span class="material-symbols-outlined text-primary align-center justify-center">add</span>
@@ -225,15 +312,21 @@
 
 		<div class="flex flex-col">
 			{#each group.members as contact (contact.id)}
+			{$inspect(contact)}
 				<div class="align-center flex flex-row items-center justify-between gap-4 px-4 py-3">
-					<ContactCard {contact} />
+					<button
+						onclick={() => openEdit(contact)}
+						class="mb-3 flex w-full items-center justify-between rounded-xl bg-white/5 p-4 text-left transition-colors hover:bg-white/10"
+					>
+						<ContactCard {contact} />
+					</button>
 					<button
 						onclick={() => toggleFavorite(contact)}
 						class="p-2 transition-transform active:scale-75"
 					>
 						<span
 							class="material-symbols-outlined text-[24px] transition-colors duration-300
-            {isFavorite(contact) ? 'fill-current text-[#fa5118]' : 'text-gray-500'}"
+            				{isFavorite(contact) ? 'fill-current text-[#fa5118]' : 'text-gray-500'}"
 							style={isFavorite(contact) ? 'font-variation-settings: "FILL" 1' : ''}
 						>
 							star
@@ -245,8 +338,8 @@
 	{/each}
 </div>
 <button
-	onclick={() => (showForm = true)}
-	class="bg-primary fixed right-6 bottom-24 z-30 flex h-18 w-18 items-center justify-center rounded-full text-black dark:text-slate-300 shadow-lg shadow-purple-500/20 transition-transform hover:scale-110 hover:bg-purple-500 active:scale-95 active:bg-purple-600"
+	onclick={openAdd}
+	class="bg-primary fixed right-6 bottom-24 z-30 flex h-18 w-18 items-center justify-center rounded-full text-black shadow-lg shadow-purple-500/20 transition-transform hover:scale-110 hover:bg-purple-500 active:scale-95 active:bg-purple-600 dark:text-slate-300"
 >
 	<span class="material-symbols-outlined text-[42px]">person_add</span>
 </button>
@@ -264,7 +357,9 @@
 			class="fixed inset-x-0 bottom-0 z-[110] rounded-t-3xl bg-[#3d2a48] p-6 shadow-2xl"
 			transition:fly={{ y: 500, duration: 400 }}
 		>
-			<h2 class="mb-4 text-xl font-bold text-white">Add Contact</h2>
+			<h2 class="mb-4 text-xl font-bold text-white">
+				{formContact.id === '' ? 'Add' : 'Update'} Contact
+			</h2>
 
 			<form
 				onsubmit={(e) => {
@@ -276,7 +371,7 @@
 					<div class="flex flex-col gap-1">
 						<label class="text-sm font-medium text-white" for="name">Name</label>
 						<input
-							bind:value={newContact.name}
+							bind:value={formContact.name}
 							class="form-input w-full rounded-lg border border-purple-300 bg-white/10 px-4 py-2 text-white placeholder:text-purple-300 focus:border-transparent focus:ring-2 focus:ring-purple-500"
 							placeholder="Full Name"
 						/>
@@ -284,7 +379,7 @@
 					<div class="flex flex-col gap-1">
 						<label class="text-sm font-medium text-white" for="email">Email</label>
 						<input
-							bind:value={newContact.email}
+							bind:value={formContact.email}
 							class="form-input w-full rounded-lg border border-purple-300 bg-white/10 px-4 py-2 text-white placeholder:text-purple-300 focus:border-transparent focus:ring-2 focus:ring-purple-500"
 							placeholder="Email"
 						/>
@@ -292,19 +387,34 @@
 					<div class="flex flex-col gap-1">
 						<label class="text-sm font-medium text-white" for="extension">Extension</label>
 						<input
-							bind:value={newContact.extension}
+							bind:value={formContact.extension}
 							class="form-input w-full rounded-lg border border-purple-300 bg-white/10 px-4 py-2 text-white placeholder:text-purple-300 focus:border-transparent focus:ring-2 focus:ring-purple-500"
 							placeholder="Extension"
 						/>
 					</div>
 				</div>
 
-				<div class="mt-6 flex flex-row items-center justify-end gap-3">
-					<button
-						type="submit"
-						class="inline-flex items-center gap-2 rounded-lg bg-purple-500 px-5 py-2.5 text-center text-sm font-medium text-white hover:bg-purple-600 focus:ring-4 focus:ring-purple-300 focus:outline-none"
-						>Add Contact</button
-					>
+				<div class="mt-6 flex flex-row items-center justify-between gap-3">
+					<div>
+						{#if formContact.id !== ''}
+							<button
+								onclick={handleDelete}
+								type="button"
+								class="py-3 font-medium transition-colors {deleteConfirm
+									? 'rounded-xl bg-red-900/20 text-red-400'
+									: 'text-red-400/70 hover:text-red-400'}"
+							>
+								{deleteConfirm ? 'Click again to confirm delete' : 'Delete Contact'}
+							</button>
+						{/if}
+					</div>
+					<div>
+						<button
+							type="submit"
+							class="inline-flex items-center gap-2 rounded-lg bg-purple-500 px-5 py-2.5 text-center text-sm font-medium text-white hover:bg-purple-600 focus:ring-4 focus:ring-purple-300 focus:outline-none"
+							>{formContact.id === '' ? 'Add' : 'Update'} Contact</button
+						>
+					</div>
 				</div>
 			</form>
 
