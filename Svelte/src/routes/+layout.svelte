@@ -4,6 +4,7 @@
 	import SideDrawer from '$lib/components/SideDrawer.svelte';
 	import HeadBar from '$lib/components/HeaderBar.svelte';
 	import Footer from '$lib/components/Footer.svelte';
+	import Toasts from '$lib/components/Toasts.svelte';
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { auth } from '$lib/auth.svelte';
@@ -88,6 +89,8 @@
 				<SideDrawer userContact={userContact} firstName={firstName} lastName={lastName}></SideDrawer>
 			</aside>
 		{/if}
+
+		<Toasts />
 
 		<Footer />
 	{/if}
