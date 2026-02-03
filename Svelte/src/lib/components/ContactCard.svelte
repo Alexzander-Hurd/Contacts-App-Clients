@@ -4,10 +4,9 @@
 
 	type Contact = components['schemas']['Contact'];
 
-	let props = $props();
-	let contact: Contact = props.contact;
-	let firstName = contact.name?.split(' ')[0] || '';
-	let lastName = contact.name?.split(' ')[1] || '';
+	let { contact }: { contact: Contact } =  $props();
+	let firstName = $derived(contact.name?.split(' ')[0] || '');
+	let lastName = $derived(contact.name?.split(' ')[1] || '');
 
 	onMount(async () => {
 	});

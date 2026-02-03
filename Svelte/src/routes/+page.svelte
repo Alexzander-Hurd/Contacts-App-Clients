@@ -154,6 +154,19 @@
 					}
 				})
 				.sort((a, b) => a.name!.localeCompare(b.name!));
+
+			if (favourites.find((f) => f.id === data.id)) {
+				favourites = favourites
+					.map((f) => {
+						if (f.id === data.id) {
+							console.log('Replaced');
+							return data;
+						} else {
+							return f;
+						}
+					})
+					.sort((a, b) => a.name!.localeCompare(b.name!));
+			}
 		}
 	}
 
@@ -239,7 +252,7 @@
 		if (!error) {
 			// Remove from local list
 			contacts = contacts.filter((c) => c.id !== formContact.id);
-			// ui.triggerToast('Contact deleted', 'success');
+			ui.triggerToast('Contact deleted', 'success');
 			showForm = false;
 		}
 	}
@@ -329,7 +342,7 @@
 						<button
 							onclick={(e) => {
 								e.stopPropagation();
-								toggleFavorite(contact)
+								toggleFavorite(contact);
 							}}
 							class="p-2 transition-transform active:scale-75"
 						>
