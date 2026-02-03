@@ -4,7 +4,17 @@ function getStorage(key: string): string | null {
 	}
 	return null;
 }
+
+export type ToastType = 'success' | 'error' | 'info';
+
+interface Toast {
+    id: string;
+    message: string;
+    type: ToastType;
+}
+
 class UIState {
+	public toasts = $state<Toast[]>([]);
 	public sidebarOpen = $state(false);
 	public isBusy = $state(false);
 	public theme = $state(
@@ -28,6 +38,22 @@ class UIState {
 		this.theme = this.theme === 'light' ? 'dark' : 'light';
 		localStorage.setItem('theme', this.theme);
 	}
+
+	triggerToast(message: string, type: ToastType = 'info') {
+        const id = crypto.randomUUID(); // Unique ID for animations
+        
+        // Add to the stack
+        this.toasts.push({ id, message, type });
+
+        // Auto-remove after 3 seconds
+        setTimeout(() => {
+            this.removeToast(id);
+        }, 3000);
+    }
+
+    removeToast(id: string) {
+        this.toasts = this.toasts.filter(t => t.id !== id);
+    }
 }
 
 export const ui = new UIState();
