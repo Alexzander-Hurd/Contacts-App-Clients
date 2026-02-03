@@ -14,7 +14,7 @@
 		</a>
 	</div>
 	<div class="flex items-center w-full justify-end">
-		<button onclick={() => (ui.toggleSidebar())} class="p-2">
+		<button onclick={async () => (await ui.toggleSidebar())} class="p-2">
 			<span class="material-symbols-outlined">menu</span>
 		</button>
 	</div>

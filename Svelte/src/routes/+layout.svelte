@@ -28,14 +28,6 @@
 			}
 		}
 
-		client.GET('/me').then((response) => {
-			if (response.data) {
-				userContact = response.data;
-				firstName = userContact.name?.split(' ')[0] || '';
-				lastName = userContact.name?.split(' ')[1] || '';
-			}
-		});
-
 		ui.setBusy(false);
 	});
 
@@ -86,7 +78,7 @@
 				class="fixed top-0 right-0 z-[70] h-full w-72 bg-[#faf5ff] dark:bg-[#1a161f] shadow-2xl"
 				transition:fly={{ x: 300, duration: 300 }}
 			>
-				<SideDrawer userContact={userContact} firstName={firstName} lastName={lastName}></SideDrawer>
+				<SideDrawer></SideDrawer>
 			</aside>
 		{/if}
 

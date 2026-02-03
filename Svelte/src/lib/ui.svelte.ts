@@ -1,3 +1,5 @@
+import { auth } from "$lib/auth.svelte";
+
 function getStorage(key: string): string | null {
 	if (typeof localStorage !== 'undefined') {
 		return localStorage.getItem(key);
@@ -22,7 +24,8 @@ class UIState {
 			(window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
 	);
 
-	public toggleSidebar() {
+	public async toggleSidebar() {
+		await auth.getUserContact();
 		this.sidebarOpen = !this.sidebarOpen;
 	}
 

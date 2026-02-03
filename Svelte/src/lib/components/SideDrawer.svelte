@@ -3,10 +3,9 @@
 	import { ui } from '$lib/ui.svelte';
 	import type { components } from '$lib/api/schema';
 
-	let props = $props();
-	let userContact: components['schemas']['Contact'] | null = $state(props.userContact);
-	let firstName: string = $state(props.firstName);
-	let lastName: string = $state(props.lastName);
+	let userContact: components['schemas']['Contact'] | null = $derived(auth.userContact);
+	let firstName: string = $derived(auth.firstName);
+	let lastName: string = $derived(auth.lastName);
 
 	$effect(() => {
 		document.body.style.overflow = ui.sidebarOpen ? 'hidden' : 'auto';

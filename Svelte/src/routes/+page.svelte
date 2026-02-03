@@ -226,6 +226,7 @@
 
 	function openAdd() {
 		formContact = { ...newContact }; // Clear data
+		errorMessage = '';
 		showForm = true;
 	}
 
@@ -233,6 +234,7 @@
 	function openEdit(contact: Contact) {
 		// Clone the data so we don't mutate the list row while typing
 		formContact = { ...contact };
+		errorMessage = '';
 		showForm = true;
 	}
 
@@ -255,6 +257,11 @@
 			ui.triggerToast('Contact deleted', 'success');
 			showForm = false;
 		}
+		else {
+			errorMessage = error.message || 'Operation failed. Please try again.';
+		}
+
+		deleteConfirm = false;
 	}
 </script>
 
