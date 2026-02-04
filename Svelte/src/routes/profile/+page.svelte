@@ -59,32 +59,32 @@
 		}
 		ui.setBusy(false);
 	}
-	// TODO: --- Password Change ---
-	// async function changePassword() {
-	//     if (securityForm.newPassword !== securityForm.confirmPassword) {
-	//         ui.triggerToast('Passwords do not match', 'error');
-	//         return;
-	//     }
+	
+	async function changePassword() {
+	    if (securityForm.newPassword !== securityForm.confirmPassword) {
+	        ui.triggerToast('Passwords do not match', 'error');
+	        return;
+	    }
 
-	//     ui.setBusy(true);
+	    ui.setBusy(true);
 
-	//     // TODO: Verify this endpoint exists in your C# API
-	//     const { error } = await client.POST('/account/change-password', {
-	//         body: {
-	//             oldPassword: securityForm.currentPassword,
-	//             newPassword: securityForm.newPassword
-	//         }
-	//     });
+	    // TODO: Verify this endpoint exists in your C# API
+	    const { error } = await client.POST('/update-password', {
+	        body: {
+	            oldPassword: securityForm.currentPassword,
+	            newPassword: securityForm.newPassword
+	        }
+	    });
 
-	//     if (error) {
-	//         ui.triggerToast('Password change failed', 'error');
-	//     } else {
-	//         ui.triggerToast('Password changed!', 'success');
-	//         // Reset form
-	//         securityForm = { currentPassword: '', newPassword: '', confirmPassword: '' };
-	//     }
-	//     ui.setBusy(false);
-	// }
+	    if (error) {
+	        ui.triggerToast('Password change failed', 'error');
+	    } else {
+	        ui.triggerToast('Password changed!', 'success');
+	        // Reset form
+	        securityForm = { currentPassword: '', newPassword: '', confirmPassword: '' };
+	    }
+	    ui.setBusy(false);
+	}
 </script>
 
 <div class="mx-auto max-w-2xl space-y-8 p-6 pb-32">
@@ -168,7 +168,7 @@
 
 		<form
 			onsubmit={(e) => {
-				e.preventDefault(); /*changePassword();*/
+				e.preventDefault(); changePassword();
 			}}
 			class="space-y-4"
 		>
