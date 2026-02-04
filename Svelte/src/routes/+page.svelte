@@ -266,7 +266,7 @@
 </script>
 
 <div
-	class="bg-white/80/80 dark:bg-slate-900/80/80 sticky top-0 z-20 px-4 pt-6 pb-2 backdrop-blur-md"
+	class="top-0 z-20 px-4 pt-6 pb-2 backdrop-blur-md"
 >
 	<div class="flex h-12 items-center justify-between">
 		<h1

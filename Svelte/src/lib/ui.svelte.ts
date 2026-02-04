@@ -25,7 +25,7 @@ class UIState {
 	);
 
 	public async toggleSidebar() {
-		await auth.getUserContact();
+		await auth.getUserSession();
 		this.sidebarOpen = !this.sidebarOpen;
 	}
 

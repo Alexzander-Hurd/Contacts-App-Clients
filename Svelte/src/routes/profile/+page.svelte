@@ -35,7 +35,7 @@
 	});
 
 	onMount(() => {
-		if (!auth.userContact) auth.getUserContact();
+		if (!auth.userContact) auth.getUserSession();
 	});
 
 	async function updateProfile() {

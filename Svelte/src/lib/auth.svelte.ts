@@ -20,6 +20,7 @@ class AuthState {
 	// Define reactive fields
 	accessToken = $state(getStorage(`${STORAGE_KEY}_access`));
 	refreshToken = $state(getStorage(`${STORAGE_KEY}_refresh`));
+	admin: boolean = $state(false);
 	userContact: components['schemas']['Contact'] | null = $state(null);
 	firstName: string = $derived(this.userContact?.name?.split(' ')[0] || '');
 	lastName: string = $state(this.userContact?.name?.split(' ')[1] || '');
@@ -39,10 +40,11 @@ class AuthState {
 		}
 	}
 
-	async getUserContact() {
+	async getUserSession() {
 		client.GET('/me').then((response) => {
 			if (response.data) {
-				this.userContact = response.data;
+				this.userContact = response.data.contact || null;
+				this.admin = response.data.admin || false;
 			}
 		});
 	}

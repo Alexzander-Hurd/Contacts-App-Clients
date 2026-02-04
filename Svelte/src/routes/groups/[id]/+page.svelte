@@ -8,17 +8,17 @@
 	import { fade, fly } from 'svelte/transition';
 
 	type Contact = components['schemas']['Contact'];
-    type Group = components['schemas']['GroupDetails'];
+	type Group = components['schemas']['GroupDetails'];
 
-    let  props = $props();
-    let groupDetails: Group = props.data;
-    let idToDelete: string = $state('');
-    let formEmail: string = $state('');
-    let formMode: string = $state('Add');
+	let props = $props();
+	let groupDetails: Group = props.data;
+	let idToDelete: string = $state('');
+	let formEmail: string = $state('');
+	let formMode: string = $state('Add');
 	let showForm: boolean = $state(false);
 	let deleteConfirm = $state(false);
 	let errorMessage: string = $state('');
-	let contacts: Contact[] = $state([...groupDetails.members || []]);
+	let contacts: Contact[] = $state([...(groupDetails.members || [])]);
 	let searchQuery: string = $state('');
 	let filteredContacts: Contact[] = $derived(
 		contacts.filter(
@@ -44,57 +44,55 @@
 		return groups;
 	});
 
-
-
 	onMount(async () => {
 		ui.setBusy(false);
 	});
 
-    async function submit() {
-        ui.setBusy(true);
-        const { data, error } = await client.POST('/groups/{id}/members/{contact}', {
-            params: {
-                path: {
-                    id: groupDetails.id!,
-                    contact: formEmail
-                }
-            }
-        });
+	async function submit() {
+		ui.setBusy(true);
+		const { data, error } = await client.POST('/groups/{id}/members/{contact}', {
+			params: {
+				path: {
+					id: groupDetails.id!,
+					contact: formEmail
+				}
+			}
+		});
 
-        if (error) {
-            ui.setBusy(false);
-            console.error(
-                'Add contact error:',
-                error.message ? error.message : error ? error : 'Unknown error'
-            );
-            errorMessage = error.message || 'Operation failed. Please try again.';
-            return;
-        }
+		if (error) {
+			ui.setBusy(false);
+			console.error(
+				'Add contact error:',
+				error.message ? error.message : error ? error : 'Unknown error'
+			);
+			errorMessage = error.message || 'Operation failed. Please try again.';
+			return;
+		}
 
-        if (data === null || data === undefined) {
-            ui.setBusy(false);
-            console.error('No data received');
-            errorMessage = 'Operation failed. Please try again.';
-            return;
-        }
+		if (data === null || data === undefined) {
+			ui.setBusy(false);
+			console.error('No data received');
+			errorMessage = 'Operation failed. Please try again.';
+			return;
+		}
 
-        contacts = [...contacts, data].sort((a, b) => a.name!.localeCompare(b.name!));
+		contacts = [...contacts, data].sort((a, b) => a.name!.localeCompare(b.name!));
 
-        ui.setBusy(false);
-        showForm = false;
-    }
+		ui.setBusy(false);
+		showForm = false;
+	}
 
-    function addContact() {
-        formMode = 'Add';
-        idToDelete = '';
-        formEmail = '';
-        showForm = true;
-    }
+	function addContact() {
+		formMode = 'Add';
+		idToDelete = '';
+		formEmail = '';
+		showForm = true;
+	}
 
 	function confirmDelete(id: string) {
-        formMode = 'Delete'; 
-        formEmail = '';
-        idToDelete = id;
+		formMode = 'Delete';
+		formEmail = '';
+		idToDelete = id;
 		showForm = true;
 	}
 
@@ -106,12 +104,7 @@
 			return;
 		}
 
-        if (formEmail !== contacts.find((c) => c.id === idToDelete)?.email) {
-            errorMessage = 'Email does not match contact, please try again.';
-            setTimeout(() => (errorMessage = ''), 3000); 
-            deleteConfirm = false;
-            return;
-        }
+		ui.setBusy(true);
 
 		// Actual Delete
 		const { error } = await client.DELETE('/groups/{id}/members/{contactId}', {
@@ -124,12 +117,13 @@
 			// ui.triggerToast('Contact deleted', 'success');
 			showForm = false;
 		}
+
+		deleteConfirm = false;
+		ui.setBusy(false);
 	}
 </script>
 
-<div
-	class="bg-white/80/80 dark:bg-slate-900/80/80 sticky top-0 z-20 px-4 pt-6 pb-2 backdrop-blur-md"
->
+<div class="top-0 z-20 px-4 pt-6 pb-2 backdrop-blur-md">
 	<div class="flex h-12 items-center justify-between">
 		<h1
 			class="align-center justify-center text-3xl font-bold tracking-tight text-[#0d141b] dark:text-white"
@@ -164,12 +158,6 @@
 </div>
 
 <div class="flex-1 pb-42">
-	<h3
-		class="px-4 pt-6 pb-2 text-lg leading-tight font-bold tracking-[-0.015em] text-[#0d141b] dark:text-slate-200"
-	>
-		All Contacts
-	</h3>
-
 	{#each groupedContacts as group}
 		<div
 			class="text-primary/70 sticky top-12 z-10 bg-purple-50 px-4 py-1 text-xs font-bold uppercase dark:bg-purple-900/20"
@@ -190,7 +178,7 @@
 							}
 						}}
 						onclick={() => confirmDelete(contact.id!)}
-						class="mb-3 flex w-full items-center justify-between rounded-xl bg-purple-100  p-4 text-left transition-colors border border-slate-200 dark:border-white/10 hover:border-purple-600 dark:hover:border-purple-600 hover:bg-purple-200 dark:bg-white/5 dark:hover:bg-white/10"
+						class="mb-3 flex w-full items-center justify-between rounded-xl border border-slate-200 bg-purple-100 p-4 text-left transition-colors hover:border-purple-600 hover:bg-purple-200 dark:border-white/10 dark:bg-white/5 dark:hover:border-purple-600 dark:hover:bg-white/10"
 					>
 						<ContactCard {contact} />
 					</div>
@@ -229,20 +217,24 @@
 					submit();
 				}}
 			>
-				<div class="space-y-4">
-					<div class="flex flex-col gap-1">
-						<label class="text-sm font-medium text-white" for="email">{formMode === 'Add' ? 'Enter Phone or' : 'Confirm'} Email</label>
-						<input
-							bind:value={formEmail}
-							id="email"
-							class="form-input w-full rounded-lg border border-purple-300 bg-white/10 px-4 py-2 text-white placeholder:text-purple-300 focus:border-transparent focus:ring-2 focus:ring-purple-500"
-							placeholder="{formMode === 'Add' ? 'Email/Extension' : contacts.filter((contact) => contact.id === idToDelete)[0].email}"
-						/>
+				{#if formMode === 'Add'}
+					<div class="space-y-4">
+						<div class="flex flex-col gap-1">
+							<label class="text-sm font-medium text-white" for="email"
+								>{formMode === 'Add' ? 'Enter Phone or' : 'Confirm'} Email</label
+							>
+							<input
+								bind:value={formEmail}
+								id="email"
+								class="form-input w-full rounded-lg border border-purple-300 bg-white/10 px-4 py-2 text-white placeholder:text-purple-300 focus:border-transparent focus:ring-2 focus:ring-purple-500"
+								placeholder={formMode === 'Add'
+									? 'Email/Extension'
+									: contacts.filter((contact) => contact.id === idToDelete)[0].email}
+							/>
+						</div>
 					</div>
-				</div>
-
-				<div class="mt-6 flex flex-row items-center justify-between gap-3">
-					<div>
+				{/if}
+				<div class="mt-6 flex flex-row items-center justify-end gap-3">
 						{#if idToDelete !== ''}
 							<button
 								onclick={handleDelete}
@@ -251,19 +243,16 @@
 									? 'rounded-xl bg-red-900/20 text-red-400'
 									: 'text-red-400/70 hover:text-red-400'}"
 							>
-								{deleteConfirm ? 'Click again to confirm delete' : 'Delete Contact'}
+								{deleteConfirm ? 'Click again to confirm removal' : 'Remove from Group'}
 							</button>
 						{/if}
-					</div>
-					<div>
-                        {#if formMode === 'Add'}
-						<button
-							type="submit"
-							class="inline-flex items-center gap-2 rounded-lg bg-purple-500 px-5 py-2.5 text-center text-sm font-medium text-white hover:bg-purple-600 focus:ring-4 focus:ring-purple-300 focus:outline-none"
-							>Add Contact</button
-						>
-                        {/if}
-					</div>
+						{#if formMode === 'Add'}
+							<button
+								type="submit"
+								class="inline-flex items-center gap-2 rounded-lg bg-purple-500 px-5 py-2.5 text-center text-sm font-medium text-white hover:bg-purple-600 focus:ring-4 focus:ring-purple-300 focus:outline-none"
+								>Add To Group</button
+							>
+						{/if}
 				</div>
 			</form>
 
