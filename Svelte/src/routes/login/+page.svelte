@@ -119,9 +119,9 @@
 		<div class="mt-8 flex flex-col items-center gap-6">
 			<div class="flex items-center gap-1.5 text-sm">
 				<span class="text-plum-muted">Don't have an account?</span>
-				<button class="hover:text-purple-600 font-semibold text-black dark:text-slate-300 transition-colors">
+				<a href="/register" class="hover:text-purple-600 font-semibold text-black dark:text-slate-300 transition-colors">
 					Sign Up
-				</button>
+				</a>
 			</div>
 		</div>
 

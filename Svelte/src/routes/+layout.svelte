@@ -56,7 +56,7 @@
 <div
 	class="relative mx-auto flex min-h-screen w-full flex-col overflow-x-hidden bg-white/80 shadow-2xl dark:bg-slate-900/80"
 >
-	{#if page.url.pathname !== '/login'}
+	{#if page.url.pathname !== '/login' && page.url.pathname !== '/register'}
 		<header>
 			<HeadBar />
 		</header>
@@ -66,7 +66,7 @@
 		{@render children()}
 	</main>
 
-	{#if page.url.pathname !== '/login'}
+	{#if page.url.pathname !== '/login' && page.url.pathname !== '/register'}
 		{#if ui.sidebarOpen}<button
 				aria-label="close drawer"
 				class="fixed inset-0 z-[60] bg-black/50 backdrop-blur-sm"
