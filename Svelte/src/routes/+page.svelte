@@ -342,7 +342,7 @@
 							}
 						}}
 						onclick={() => openEdit(contact)}
-						class="mb-3 flex w-full items-center justify-between rounded-xl bg-white/5 p-4 text-left transition-colors hover:bg-white/10"
+						class="mb-3 flex w-full items-center justify-between rounded-xl bg-purple-100  p-4 text-left transition-colors border border-slate-200 dark:border-white/10 hover:border-purple-600 dark:hover:border-purple-600 hover:bg-purple-200 dark:bg-white/5 dark:hover:bg-white/10"
 					>
 						<ContactCard {contact} />
 
@@ -402,6 +402,7 @@
 						<label class="text-sm font-medium text-white" for="name">Name</label>
 						<input
 							bind:value={formContact.name}
+							id="name"
 							class="form-input w-full rounded-lg border border-purple-300 bg-white/10 px-4 py-2 text-white placeholder:text-purple-300 focus:border-transparent focus:ring-2 focus:ring-purple-500"
 							placeholder="Full Name"
 						/>
@@ -410,6 +411,7 @@
 						<label class="text-sm font-medium text-white" for="email">Email</label>
 						<input
 							bind:value={formContact.email}
+							id="email"
 							class="form-input w-full rounded-lg border border-purple-300 bg-white/10 px-4 py-2 text-white placeholder:text-purple-300 focus:border-transparent focus:ring-2 focus:ring-purple-500"
 							placeholder="Email"
 						/>
@@ -418,6 +420,7 @@
 						<label class="text-sm font-medium text-white" for="extension">Extension</label>
 						<input
 							bind:value={formContact.extension}
+							id="extension"
 							class="form-input w-full rounded-lg border border-purple-300 bg-white/10 px-4 py-2 text-white placeholder:text-purple-300 focus:border-transparent focus:ring-2 focus:ring-purple-500"
 							placeholder="Extension"
 						/>

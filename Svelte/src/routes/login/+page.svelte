@@ -76,6 +76,7 @@
 					<input
 						class="border-plum-border focus:ring-primary h-14 w-full rounded-xl border bg-[#faf5ff] dark:bg-[#2d1b36] px-4 text-black dark:text-slate-300 transition-all outline-none placeholder:text-[#715d7a] focus:border-transparent focus:ring-2"
 						placeholder="name@example.com"
+						id="username"
 						bind:value={username}
 					/>
 				</div>
@@ -88,6 +89,7 @@
 						<input
 							class="border-plum-border focus:ring-primary h-14 w-full rounded-xl border bg-[#faf5ff] dark:bg-[#2d1b36] px-4 text-black dark:text-slate-300 transition-all outline-none placeholder:text-[#715d7a] focus:border-transparent focus:ring-2"
 							placeholder="••••••••"
+							id="password"
 							bind:value={password}
 							type="password"
 						/>

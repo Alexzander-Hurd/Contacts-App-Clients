@@ -31,13 +31,10 @@
 	</div>
 	<div class="flex h-full flex-col items-center justify-start px-4">
 		<div class="flex h-16 items-center justify-center px-4">
-			<a href="/about" class="text-xl font-bold text-black dark:text-slate-300">About</a>
+			<a onclick={() => ui.closeSidebar()} href="/about" class="text-xl font-bold text-black dark:text-slate-300">About</a>
 		</div>
 		<div class="flex h-16 items-center justify-center px-4">
-			<a href="/settings" class="text-xl font-bold text-black dark:text-slate-300">Settings</a>
-		</div>
-		<div class="flex h-16 items-center justify-center px-4">
-			<a href="/profile" class="text-xl font-bold text-black dark:text-slate-300">Profile</a>
+			<a onclick={() => ui.closeSidebar()} href="/profile" class="text-xl font-bold text-black dark:text-slate-300">Profile</a>
 		</div>
 	</div>
 	<div class="flex h-36 flex-col items-center justify-center px-6">

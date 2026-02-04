@@ -42,10 +42,10 @@
         {#each groups as group (group.id)}
             <a 
                 href="/groups/{group.id}"
-                class="group relative block p-6 rounded-2xl bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:border-purple-600 dark:hover:border-purple-600 transition-all hover:shadow-xl"
+                class="group relative block p-6 rounded-2xl bg-purple-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:border-purple-600 dark:hover:border-purple-600 hover:bg-purple-200 dark:bg-white/5 dark:hover:bg-white/10 transition-all hover:shadow-xl"
             >
                 <div class="flex items-start justify-between mb-4">
-                    <div class="h-12 w-12 rounded-full bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-300 flex items-center justify-center">
+                    <div class="h-12 w-12 rounded-full bg-purple-200 dark:bg-purple-900/30 text-purple-600 dark:text-purple-300 flex items-center justify-center">
                         <span class="material-symbols-outlined">group</span>
                     </div>
                 </div>

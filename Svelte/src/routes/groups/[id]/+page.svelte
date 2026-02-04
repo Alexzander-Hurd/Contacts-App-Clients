@@ -190,7 +190,7 @@
 							}
 						}}
 						onclick={() => confirmDelete(contact.id!)}
-						class="mb-3 flex w-full items-center justify-between rounded-xl bg-white/5 p-4 text-left transition-colors hover:bg-white/10"
+						class="mb-3 flex w-full items-center justify-between rounded-xl bg-purple-100  p-4 text-left transition-colors border border-slate-200 dark:border-white/10 hover:border-purple-600 dark:hover:border-purple-600 hover:bg-purple-200 dark:bg-white/5 dark:hover:bg-white/10"
 					>
 						<ContactCard {contact} />
 					</div>
@@ -234,6 +234,7 @@
 						<label class="text-sm font-medium text-white" for="email">{formMode === 'Add' ? 'Enter Phone or' : 'Confirm'} Email</label>
 						<input
 							bind:value={formEmail}
+							id="email"
 							class="form-input w-full rounded-lg border border-purple-300 bg-white/10 px-4 py-2 text-white placeholder:text-purple-300 focus:border-transparent focus:ring-2 focus:ring-purple-500"
 							placeholder="{formMode === 'Add' ? 'Email/Extension' : contacts.filter((contact) => contact.id === idToDelete)[0].email}"
 						/>
