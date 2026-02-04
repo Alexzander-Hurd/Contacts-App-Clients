@@ -10,7 +10,7 @@
             animate:flip
             transition:fly={{ y: 20, duration: 300 }}
             class="pointer-events-auto flex min-w-[320px] items-center gap-3 rounded-xl p-4 shadow-2xl text-white font-bold
-            {toast.type === 'success' ? 'bg-[#fa5118] text-white' : 
+            {toast.type === 'success' ? 'bg-green-500 text-white' : 
              toast.type === 'error' ? 'bg-red-500 text-white' : 
              'bg-slate-800 text-white'}"
         >

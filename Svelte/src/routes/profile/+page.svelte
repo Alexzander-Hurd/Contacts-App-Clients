@@ -4,7 +4,6 @@
 	import { auth } from '$lib/auth.svelte';
 	import type { components } from '$lib/api/schema';
 	import { onMount } from 'svelte';
-	import { on } from 'svelte/events';
 
 	type Contact = components['schemas']['Contact'];
 
@@ -22,6 +21,10 @@
 		confirmPassword: ''
 	});
 
+	let deleteConfirm = $state(false);
+	let contactLoading = $state(false);
+	let passwordLoading = $state(false);
+
 	// Load initial data from store
 	$effect(() => {
 		if (auth.userContact) {
@@ -36,8 +39,19 @@
 	});
 
 	async function updateProfile() {
+		if (contactLoading) return;
+		if (
+			profileForm.name === auth.userContact?.name &&
+			profileForm.email === auth.userContact?.email &&
+			profileForm.extension === auth.userContact?.extension
+		)
+		{
+			ui.triggerToast('New details cannot be the same as the current details', 'error');
+			return;
+		}
 		if (!auth.userContact?.id) return;
-		ui.setBusy(true);
+
+		contactLoading = true;
 
 		const { data, error } = await client.PUT('/contacts/{id}', {
 			params: { path: { id: auth.userContact.id } },
@@ -57,33 +71,83 @@
 			}
 			ui.triggerToast('Profile updated successfully', 'success');
 		}
-		ui.setBusy(false);
+
+		setTimeout(() => (contactLoading = false), 3000);
 	}
-	
+
 	async function changePassword() {
-	    if (securityForm.newPassword !== securityForm.confirmPassword) {
-	        ui.triggerToast('Passwords do not match', 'error');
-	        return;
-	    }
+		if (passwordLoading) return;
 
-	    ui.setBusy(true);
+		if (
+			securityForm.currentPassword === '' ||
+			securityForm.newPassword === '' ||
+			securityForm.confirmPassword === ''
+		) {
+			ui.triggerToast('All fields are required', 'error');
+			return;
+		}
 
-	    // TODO: Verify this endpoint exists in your C# API
-	    const { error } = await client.POST('/update-password', {
-	        body: {
-	            oldPassword: securityForm.currentPassword,
-	            newPassword: securityForm.newPassword
-	        }
-	    });
+		if (securityForm.newPassword === securityForm.currentPassword) {
+			ui.triggerToast('New password cannot be the same as the current password', 'error');
+			return;
+		}
 
-	    if (error) {
-	        ui.triggerToast('Password change failed', 'error');
-	    } else {
-	        ui.triggerToast('Password changed!', 'success');
-	        // Reset form
-	        securityForm = { currentPassword: '', newPassword: '', confirmPassword: '' };
-	    }
-	    ui.setBusy(false);
+		if (securityForm.newPassword.length < 8) {
+			ui.triggerToast('Password must be at least 8 characters', 'error');
+			return;
+		}
+
+		if (securityForm.newPassword !== securityForm.confirmPassword) {
+			ui.triggerToast('Passwords do not match', 'error');
+			return;
+		}
+
+		passwordLoading = true;
+
+		const { error } = await client.POST('/update-password', {
+			body: {
+				oldPassword: securityForm.currentPassword,
+				newPassword: securityForm.newPassword
+			}
+		});
+
+		if (error) {
+			ui.triggerToast('Password change failed', 'error');
+		} else {
+			ui.triggerToast('Password changed!', 'success');
+			// Reset form
+			securityForm = { currentPassword: '', newPassword: '', confirmPassword: '' };
+		}
+
+		passwordLoading = false;
+	}
+
+	async function deleteAccount() {
+		ui.setBusy(true);
+		if (!deleteConfirm) {
+			deleteConfirm = true;
+			// Reset confirmation if they don't click again within 3 seconds
+			setTimeout(() => (deleteConfirm = false), 3000);
+			return;
+		}
+
+		// Actual Delete
+		const { error } = await client.DELETE('/me', {});
+
+		if (!error) {
+			// Remove from local list
+			ui.setBusy(false);
+			ui.triggerToast('Contact deleted', 'success');
+			setTimeout(() => auth.logout(), 1000);
+		} else {
+			ui.setBusy(false);
+			ui.triggerToast(
+				`Failed to delete contact:  ${error.message || 'Operation failed. Please try again.'}`,
+				'error'
+			);
+		}
+
+		deleteConfirm = false;
 	}
 </script>
 
@@ -150,9 +214,14 @@
 
 			<div class="flex justify-end pt-2">
 				<button
-							class="inline-flex items-center gap-2 rounded-lg bg-purple-500 px-5 py-2.5 text-center text-sm font-medium text-white hover:bg-purple-600 focus:ring-4 focus:ring-purple-300 focus:outline-none"
+					class="inline-flex items-center gap-2 rounded-lg bg-purple-500 px-5 py-2.5 text-center text-sm font-medium text-white hover:bg-purple-600 focus:ring-4 focus:ring-purple-300 focus:outline-none"
 				>
-					Save Changes
+					{#if contactLoading}
+						<span class="material-symbols-outlined animate-spin">progress_activity</span>
+						Saving...
+					{:else}
+						Save Changes
+					{/if}
 				</button>
 			</div>
 		</form>
@@ -168,7 +237,8 @@
 
 		<form
 			onsubmit={(e) => {
-				e.preventDefault(); changePassword();
+				e.preventDefault();
+				changePassword();
 			}}
 			class="space-y-4"
 		>
@@ -207,9 +277,36 @@
 				<button
 					class="inline-flex items-center gap-2 rounded-lg bg-purple-500 px-5 py-2.5 text-center text-sm font-medium text-white hover:bg-purple-600 focus:ring-4 focus:ring-purple-300 focus:outline-none"
 				>
-					Update Password
+					{#if passwordLoading}
+						<span class="material-symbols-outlined animate-spin">progress_activity</span>
+						Updating...
+					{:else}
+						Update Password
+					{/if}
 				</button>
 			</div>
 		</form>
+	</section>
+	<section
+		class="mt-12 rounded-3xl border border-red-200 bg-red-50 p-6 dark:border-red-900/30 dark:bg-red-900/10"
+	>
+		<h2 class="mb-4 flex items-center gap-2 text-xl font-bold text-red-600 dark:text-red-400">
+			<span class="material-symbols-outlined">warning</span>
+			Danger Zone
+		</h2>
+		<p class="mb-6 text-sm text-slate-600 dark:text-slate-400">
+			Once you delete your account, there is no going back. All your data will be permanently
+			removed.
+		</p>
+
+		<button
+			onclick={() => deleteAccount()}
+			type="button"
+			class="py-3 font-medium transition-colors {deleteConfirm
+				? 'rounded-xl bg-red-900/20 text-red-400'
+				: 'text-red-400/70 hover:text-red-400'}"
+		>
+			{deleteConfirm ? 'Click again to confirm delete' : 'Delete Account'}
+		</button>
 	</section>
 </div>

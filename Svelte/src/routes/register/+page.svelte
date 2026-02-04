@@ -13,6 +13,13 @@
 	async function submit() {
 		isLoading = true;
 
+		
+
+		if (password.length < 8) {
+			ui.triggerToast('Password must be at least 8 characters', 'error');
+			return;
+		}
+
 		if (password !== confirmPassword) {
 			ui.triggerToast('Passwords do not match', 'error');
 			return;
