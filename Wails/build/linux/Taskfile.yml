@@ -5,24 +5,32 @@ includes:
 
 tasks:
   build:
-    summary: Builds the application for Linux
+    summary: Builds the application
     deps:
       - task: common:go:mod:tidy
       - task: common:build:frontend
-        vars:
-          BUILD_FLAGS:
-            ref: .BUILD_FLAGS
-          PRODUCTION:
-            ref: .PRODUCTION
-      - task: common:generate:icons
-    cmds:
-      - go build {{.BUILD_FLAGS}} -o {{.BIN_DIR}}/{{.APP_NAME}}
     vars:
-      BUILD_FLAGS: '{{if eq .PRODUCTION "true"}}-tags production -trimpath -buildvcs=false -ldflags="-w -s"{{else}}-buildvcs=false -gcflags=all="-l"{{end}}'
+      # 1. Define the target OS based on the input or default
+      TARGET_OS: '{{.PLATFORM | default "linux"}}'
+      
+      # 2. Logic: If Windows, manually add ".exe"
+      EXT: '{{if eq .TARGET_OS "windows"}}.exe{{end}}'
+      
+      # 3. Logic: If Windows, use the GUI flag to hide the console
+      GUI_FLAG: '{{if eq .TARGET_OS "windows"}}-H windowsgui{{end}}'
+      
+      # 4. Construct the build flags
+      BUILD_FLAGS: '{{if eq .PRODUCTION "true"}}-tags production -trimpath -buildvcs=false -ldflags="-s -w {{.GUI_FLAG}}"{{else}}-buildvcs=false -gcflags=all="-l" -ldflags="{{.GUI_FLAG}}"{{end}}'
+
+    cmds:
+      # 5. Build command uses the new EXT variable
+      - go build {{.BUILD_FLAGS}} -o {{.BIN_DIR}}/{{.APP_NAME}}{{.EXT}}
+      
     env:
-      GOOS: linux
-      CGO_ENABLED: 1
-      GOARCH: '{{.ARCH | default ARCH}}'
+      GOOS: '{{.TARGET_OS}}'
+      GOARCH: '{{.ARCH | default "amd64"}}'
+      # 6. CRITICAL: Disable CGO for Windows cross-compilation
+      CGO_ENABLED: '{{if eq .TARGET_OS "windows"}}0{{else}}1{{end}}'
       PRODUCTION: '{{.PRODUCTION | default "false"}}'
 
   package:

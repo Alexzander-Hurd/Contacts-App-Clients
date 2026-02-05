@@ -70,16 +70,7 @@ select opt in "${options[@]}"; do
         echo "------------------------------------------------"
         echo "Building the application..."
 
-        # Frontend
-        cd frontend
-        npm install
-        npm audit fix
-        npm run gen:api
-        npm run build
-        cd ..
-
-        # Wails
-        env GOOS=windows GOARCH=amd64 go build -o bin/ContactsApp.exe -ldflags "-H windowsgui"
+        PLATFORM=windows PRODUCTION=false wails3 task build
         break
     else
         echo "Invalid selection. Try again."
