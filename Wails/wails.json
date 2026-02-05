@@ -1,0 +1,13 @@
+{
+  "name": "ContactsApp",
+  "version": "1.0.0",
+  "displayName": "ContactsApp",
+  "description": "My Portfolio App",
+  "frontend:install": "npm install",
+  "frontend:build": "npm run build", 
+  "frontend:dev:watcher": "npm run dev",
+  "frontend:dev:serverUrl": "auto",
+  "assets": "./frontend/dist",  
+  "wailsjsdir": "./frontend/src/lib/wailsjs",
+  "outputfilename": "contact-manager"
+}
