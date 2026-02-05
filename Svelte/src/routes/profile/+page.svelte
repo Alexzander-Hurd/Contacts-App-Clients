@@ -72,7 +72,7 @@
 			ui.triggerToast('Profile updated successfully', 'success');
 		}
 
-		setTimeout(() => (contactLoading = false), 3000);
+		contactLoading = false;
 	}
 
 	async function changePassword() {

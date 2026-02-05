@@ -8,7 +8,7 @@ let refreshPromise: Promise<string | null> | null = null;
 
 export function createCustomFetch(baseFetch: typeof fetch) {
 	return async (request: Request | RequestInfo | URL, options?: RequestInit) => {
-		let headers = new Headers();
+		const headers = new Headers();
 
 		if (request instanceof Request) {
 			request.headers.forEach((value, key) => headers.set(key, value));
@@ -54,9 +54,7 @@ export function createCustomFetch(baseFetch: typeof fetch) {
 
 		console.log('Got new access token');
 
-		// Retry original request with new token
-		headers = new Headers(options?.headers);
-		headers.append('Authorization', `Bearer ${newAccessToken}`);
+		headers.set('Authorization', `Bearer ${newAccessToken}`);
 		options = { ...options, headers };
 
 		return await baseFetch(request, options);
