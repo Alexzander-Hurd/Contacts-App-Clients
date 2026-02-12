@@ -81,7 +81,7 @@ async function submit() {
 
   if (formContact.value.id === '') {
     const { data, error } = await client.POST('/contacts', { body: payload })
-    
+
     // Type Guard: If error or no data, stop
     if (error || !data) {
       errorMessage.value = error?.message || 'Add failed'
@@ -91,7 +91,7 @@ async function submit() {
 
     // Now TypeScript knows 'data' is a valid Contact
     contacts.value = [...contacts.value, data].sort((a, b) =>
-      (a?.name ?? '').localeCompare(b?.name ?? '')
+      (a?.name ?? '').localeCompare(b?.name ?? ''),
     )
   } else {
     const { data, error } = await client.PUT('/contacts/{id}', {
@@ -265,7 +265,12 @@ const openEdit = (contact: Contact) => {
               <label class="text-sm font-medium text-white capitalize" :for="field">{{
                 field
               }}</label>
-              <input v-model="formContact[field]" :id="field" class="..." />
+              <input
+                v-model="formContact[field]"
+                :id="field"
+                type="text"
+                class="form-input w-full rounded-xl border border-purple-300/30 bg-white/10 px-4 py-3 text-white placeholder:text-purple-300/50 outline-none focus:ring-2 focus:ring-purple-500 transition-all dark:bg-black/20"
+              />
             </div>
             <div class="mt-6 flex items-center justify-between">
               <button
