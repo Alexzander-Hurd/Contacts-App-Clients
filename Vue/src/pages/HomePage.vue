@@ -1,109 +1,321 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
-import { useUserStore } from '@/stores/user'
+import { ref, computed, onMounted } from 'vue'
+import { client } from '@/api/api'
+import type { components } from '@/api/schema'
+import FavouriteContactBubble from '@/components/FavouriteContactBubble.vue'
+import ContactCard from '@/components/ContactCard.vue'
 
-const userStore = useUserStore()
-const router = useRouter()
+type Contact = components['schemas']['Contact']
+type NewContact = components['schemas']['ContactDTO']
 
+const emptyContact: Contact = { id: '', name: '', email: '', extension: '' }
+const formContact = ref<Contact>({ ...emptyContact })
+const showForm = ref(false)
+const deleteConfirm = ref(false)
 const errorMessage = ref('')
+const isLoading = ref(false)
+const contacts = ref<Contact[]>([])
+const favourites = ref<Contact[]>([])
+const searchQuery = ref('')
 
-async function handleLogout() {
-  console.log('Logging out...');
-  errorMessage.value = ''
+// Derived: Filtered Contacts
+const filteredContacts = computed(() => {
+  const query = searchQuery.value.toLowerCase()
+  return contacts.value.filter(
+    (c) =>
+      c.name?.toLowerCase().includes(query) ||
+      c.extension?.includes(query) ||
+      c.email?.toLowerCase().includes(query),
+  )
+})
 
-  try {
-    await userStore.logout();
+// Derived: Grouped Contacts
+const groupedContacts = computed(() => {
+  const groups: { letter: string; members: Contact[] }[] = []
+  let currentLetter = ''
 
-    // Redirect to home or contacts list on success
-    router.push({ name: 'login' })
-  } catch (err: unknown) {
-    // Handle error based on your backend response structure
-    errorMessage.value = err?.response?.data?.message || 'Invalid credentials. Please try again.'
-    console.error('Login failed:', err)
+  filteredContacts.value.forEach((contact) => {
+    const firstLetter = contact.name ? contact.name.charAt(0).toUpperCase() : '#'
+    if (firstLetter !== currentLetter) {
+      currentLetter = firstLetter
+      groups.push({ letter: currentLetter, members: [] })
+    }
+    // Fixed: Ensure the group exists before pushing
+    const targetGroup = groups[groups.length - 1]
+    if (targetGroup) {
+      targetGroup.members.push(contact)
+    }
+  })
+  return groups
+})
+
+const isFavorite = (contact: Contact) => favourites.value.some((f) => f.id === contact.id)
+
+onMounted(async () => {
+  const [contactsRes, favsRes] = await Promise.all([
+    client.GET('/contacts'),
+    client.GET('/contacts/favorites'),
+  ])
+
+  // Use the Nullish Coalescing operator (??) to provide a fallback array
+  if (contactsRes.data) {
+    contacts.value = [...(contactsRes.data ?? [])].sort((a, b) =>
+      (a?.name ?? '').localeCompare(b?.name ?? ''),
+    )
   }
+
+  if (favsRes.data) {
+    favourites.value = [...(favsRes.data ?? [])].sort((a, b) =>
+      (a?.name ?? '').localeCompare(b?.name ?? ''),
+    )
+  }
+})
+
+async function submit() {
+  isLoading.value = true
+  const payload: NewContact = {
+    name: formContact.value.name,
+    email: formContact.value.email,
+    extension: formContact.value.extension,
+  }
+
+  if (formContact.value.id === '') {
+    const { data, error } = await client.POST('/contacts', { body: payload })
+    
+    // Type Guard: If error or no data, stop
+    if (error || !data) {
+      errorMessage.value = error?.message || 'Add failed'
+      isLoading.value = false
+      return
+    }
+
+    // Now TypeScript knows 'data' is a valid Contact
+    contacts.value = [...contacts.value, data].sort((a, b) =>
+      (a?.name ?? '').localeCompare(b?.name ?? '')
+    )
+  } else {
+    const { data, error } = await client.PUT('/contacts/{id}', {
+      body: payload,
+      params: { path: { id: formContact.value.id! } },
+    })
+
+    if (error || !data) {
+      errorMessage.value = error?.message || 'Update failed'
+      isLoading.value = false
+      return
+    }
+
+    // Update the local arrays with the fresh data from response
+    contacts.value = contacts.value
+      .map((c) => (c.id === data.id ? data : c))
+      .sort((a, b) => (a?.name ?? '').localeCompare(b?.name ?? ''))
+
+    if (isFavorite(data)) {
+      favourites.value = favourites.value
+        .map((f) => (f.id === data.id ? data : f))
+        .sort((a, b) => (a?.name ?? '').localeCompare(b?.name ?? ''))
+    }
+  }
+  showForm.value = false
+  isLoading.value = false
+}
+
+async function toggleFavorite(contact: Contact) {
+  const alreadyFav = isFavorite(contact)
+  if (!alreadyFav) {
+    favourites.value = [...favourites.value, contact].sort((a, b) => a.name!.localeCompare(b.name!))
+    const { error } = await client.POST('/contacts/favorites/{id}', {
+      params: { path: { id: contact.id! } },
+    })
+    if (error) favourites.value = favourites.value.filter((f) => f.id !== contact.id)
+  } else {
+    favourites.value = favourites.value.filter((f) => f.id !== contact.id)
+    const { error } = await client.DELETE('/contacts/favorites/{id}', {
+      params: { path: { id: contact.id! } },
+    })
+    if (error)
+      favourites.value = [...favourites.value, contact].sort((a, b) =>
+        a.name!.localeCompare(b.name!),
+      )
+  }
+}
+
+async function handleDelete() {
+  if (!deleteConfirm.value) {
+    deleteConfirm.value = true
+    setTimeout(() => (deleteConfirm.value = false), 3000)
+    return
+  }
+
+  const { error } = await client.DELETE('/contacts/{id}', {
+    params: { path: { id: formContact.value.id! } },
+  })
+  if (!error) {
+    contacts.value = contacts.value.filter((c) => c.id !== formContact.value.id)
+    favourites.value = favourites.value.filter((f) => f.id !== formContact.value.id)
+    showForm.value = false
+  }
+  deleteConfirm.value = false
+}
+
+const openAdd = () => {
+  formContact.value = { ...emptyContact }
+  errorMessage.value = ''
+  showForm.value = true
+}
+const openEdit = (contact: Contact) => {
+  formContact.value = { ...contact }
+  errorMessage.value = ''
+  showForm.value = true
 }
 </script>
 
 <template>
-  <div
-    class="align-center flex min-h-[calc(100vh)] w-full flex-1 flex-row items-center justify-center"
-  >
-    <div class="align-center flex max-w-lg flex-col items-center justify-center">
-      <p class="text-2xl font-semibold tracking-tight text-black dark:text-slate-300">
-        ContactsApp
-      </p>
+  <div class="top-0 z-20 px-4 pt-6 pb-2 backdrop-blur-md">
+    <div class="flex h-12 items-center justify-between">
+      <h1 class="text-3xl font-bold tracking-tight text-[#0d141b] dark:text-white">Contacts</h1>
       <button
-        @click="handleLogout"
-        :disabled="userStore.isLoading"
-        class="shadow-primary/25 relative flex h-14 w-full items-center justify-center gap-2 rounded-xl bg-purple-800 py-3 font-semibold text-white transition-all hover:scale-[1.05] hover:bg-purple-600 active:scale-[0.98] disabled:opacity-70 dark:bg-purple-600 hover:dark:bg-purple-500"
+        @click="openAdd"
+        class="rounded-full p-2 transition-transform hover:scale-110 hover:bg-purple-500 active:scale-95"
       >
-        <p v-if="userStore.isLoading">
-          <span class="material-symbols-outlined animate-spin">progress_activity</span>
-          Logging Out...
-        </p>
-        <p v-else>Log Out</p>
-
-        <p></p>
+        <span class="material-symbols-outlined">add</span>
       </button>
     </div>
   </div>
+
+  <div class="px-4 py-2">
+    <div class="flex h-11 w-full rounded-xl bg-[#ede7f3] dark:bg-[#3d2a48]">
+      <div class="flex items-center pl-4 text-[#715d7a]">
+        <span class="material-symbols-outlined text-[20px]">search</span>
+      </div>
+      <input
+        v-model="searchQuery"
+        class="flex-1 bg-transparent px-3 text-base outline-none dark:text-slate-100"
+        placeholder="Search name or number"
+      />
+    </div>
+  </div>
+
+  <div class="mt-4">
+    <h3 class="px-4 pb-2 text-sm font-semibold uppercase text-[#5d4c61] dark:text-slate-400">
+      Favourites
+    </h3>
+    <div class="no-scrollbar flex overflow-x-auto px-4 py-3 gap-6">
+      <FavouriteContactBubble v-for="f in favourites" :key="f.id!" :contact="f" />
+    </div>
+  </div>
+
+  <div class="flex-1 pb-32">
+    <h3 class="px-4 pt-6 pb-2 text-lg font-bold dark:text-slate-200">All Contacts</h3>
+    <div v-for="group in groupedContacts" :key="group.letter">
+      <div
+        class="sticky top-12 z-10 bg-purple-50 px-4 py-1 text-xs font-bold uppercase dark:bg-purple-900/20"
+      >
+        {{ group.letter }}
+      </div>
+      <div class="flex flex-col">
+        <div v-for="contact in group.members" :key="contact.id!" class="px-4 py-3">
+          <div
+            @click="openEdit(contact)"
+            class="flex w-full items-center justify-between rounded-xl border border-slate-200 bg-purple-100 p-4 transition-colors hover:border-purple-600 dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/10"
+          >
+            <ContactCard :contact="contact" />
+            <button
+              @click.stop="toggleFavorite(contact)"
+              class="p-2 transition-transform active:scale-75"
+            >
+              <span
+                class="material-symbols-outlined text-[24px]"
+                :class="isFavorite(contact) ? 'text-[#fa5118]' : 'text-gray-500'"
+                :style="isFavorite(contact) ? 'font-variation-settings: \'FILL\' 1' : ''"
+              >
+                star
+              </span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <button
+    @click="openAdd"
+    class="fixed right-6 bottom-24 z-30 flex h-18 w-18 items-center justify-center rounded-full bg-purple-600 text-white shadow-lg transition-transform hover:scale-110 active:scale-95"
+  >
+    <span class="material-symbols-outlined text-[42px]">person_add</span>
+  </button>
+
+  <Teleport to="body">
+    <div v-if="showForm" class="fixed inset-0 z-[100] flex items-end">
+      <Transition name="fade" appear>
+        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="showForm = false"></div>
+      </Transition>
+
+      <Transition name="slide-up" appear>
+        <div class="relative w-full rounded-t-3xl bg-[#3d2a48] p-6 shadow-2xl z-[110]">
+          <h2 class="mb-4 text-xl font-bold text-white">
+            {{ formContact.id === '' ? 'Add' : 'Update' }} Contact
+          </h2>
+          <form @submit.prevent="submit" class="space-y-4">
+            <div
+              v-for="field in ['name', 'email', 'extension'] as const"
+              :key="field"
+              class="flex flex-col gap-1"
+            >
+              <label class="text-sm font-medium text-white capitalize" :for="field">{{
+                field
+              }}</label>
+              <input v-model="formContact[field]" :id="field" class="..." />
+            </div>
+            <div class="mt-6 flex items-center justify-between">
+              <button
+                v-if="formContact.id"
+                type="button"
+                @click="handleDelete"
+                :class="deleteConfirm ? 'bg-red-900/20 text-red-400' : 'text-red-400/70'"
+                class="py-2 px-4 rounded-xl transition-all"
+              >
+                {{ deleteConfirm ? 'Confirm Delete?' : 'Delete' }}
+              </button>
+              <div v-else></div>
+              <button
+                type="submit"
+                class="rounded-lg bg-purple-500 px-5 py-2.5 text-white font-medium"
+              >
+                {{ formContact.id === '' ? 'Add' : 'Update' }}
+              </button>
+            </div>
+          </form>
+        </div>
+      </Transition>
+    </div>
+  </Teleport>
 </template>
 
 <style scoped>
-.login-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 80vh;
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.4s;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 
-.login-form {
-  width: 100%;
-  max-width: 400px;
-  padding: 2rem;
-  border-radius: 8px;
-  background: #f9f9f9;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+.slide-up-enter-active,
+.slide-up-leave-active {
+  transition: transform 0.4s ease-out;
+}
+.slide-up-enter-from,
+.slide-up-leave-to {
+  transform: translateY(100%);
 }
 
-.error-banner {
-  background-color: #fee2e2;
-  color: #dc2626;
-  padding: 0.75rem;
-  border-radius: 4px;
-  margin-bottom: 1rem;
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
 }
-
-.field {
-  margin-bottom: 1rem;
-}
-
-label {
-  display: block;
-  margin-bottom: 0.5rem;
-  font-weight: bold;
-}
-
-input {
-  width: 100%;
-  padding: 0.5rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-}
-
-button {
-  width: 100%;
-  padding: 0.75rem;
-  background-color: #4f46e5;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-button:disabled {
-  background-color: #9ca3af;
-  cursor: not-allowed;
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 </style>

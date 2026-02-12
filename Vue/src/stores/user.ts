@@ -2,7 +2,7 @@ import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
 import { client } from '@/api/api'
 import { setTokens, clearTokens, access } from '@/api/auth'
-import type { components, paths } from '@/api/schema'
+import type { components } from '@/api/schema'
 
 type UserProfile = components['schemas']['UserSession'] | null | undefined;
 
