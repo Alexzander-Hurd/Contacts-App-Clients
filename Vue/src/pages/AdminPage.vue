@@ -189,14 +189,15 @@ function copyToClipboard(text: string) {
         <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="showForm = false"></div>
       </Transition>
       <Transition name="slide-up" appear>
-        <div>
+        <div class="fixed inset-x-0 bottom-0 z-[110] rounded-t-3xl bg-[#3d2a48] p-6 shadow-2xl">
           <h2 class="mb-4 text-xl font-bold text-white">Manage User</h2>
 
           <div class="mt-6 flex flex-row items-center justify-between gap-3">
             <button
               @click="handleDelete"
               type="button"
-              class="py-3 font-medium transition-colors {deleteConfirm ? 'rounded-xl bg-red-900/20 text-red-400' : 'text-red-400/70 hover:text-red-400'}"
+              class="py-3 px-2 font-medium transition-colors"
+              :class="deleteConfirm ? 'rounded-xl bg-red-900/20 text-red-400' : 'text-red-400/70 hover:text-red-400'"
             >
               {{ deleteConfirm ? 'Click again to confirm delete' : 'Delete User' }}
             </button>

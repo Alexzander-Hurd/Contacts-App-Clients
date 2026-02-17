@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { useUserStore } from '@/stores/user';
-import { access } from '@/api/auth';
+import { useUserStore } from '@/stores/user'
+import { access } from '@/api/auth'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -10,24 +10,42 @@ const router = createRouter({
       name: 'home',
       component: () => import('../pages/HomePage.vue'),
       meta: {
-        requiresAuth: true
-      }
+        requiresAuth: true,
+      },
+    },
+    {
+      path: '/groups',
+      name: 'groups',
+      component: () => import('../pages/GroupsListPage.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/profile',
+      name: 'profile',
+      component: () => import('../pages/ProfilePage.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/groups/:id',
+      name: 'group-details',
+      component: () => import('../pages/GroupsDetailsPage.vue'),
+      meta: { requiresAuth: true },
     },
     {
       path: '/about',
       name: 'about',
       component: () => import('../pages/AboutPage.vue'),
       meta: {
-        requiresAuth: true
-      }
+        requiresAuth: true,
+      },
     },
     {
       path: '/admin',
       name: 'admin',
       component: () => import('../pages/AdminPage.vue'),
       meta: {
-        requiresAuth: true
-      }
+        requiresAuth: true,
+      },
     },
     {
       path: '/login',
@@ -35,40 +53,49 @@ const router = createRouter({
       component: () => import('../pages/LoginPage.vue'),
       meta: {
         requiresAuth: false,
-        guestOnly: true
-      }
-    }
+        guestOnly: true,
+      },
+    },
+    {
+      path: '/register',
+      name: 'register',
+      component: () => import('../pages/RegisterPage.vue'),
+      meta: {
+        requiresAuth: false,
+        guestOnly: true,
+      },
+    },
   ],
-});
+})
 
 router.beforeEach(async (to, from, next) => {
-  const userStore = useUserStore();
+  const userStore = useUserStore()
 
   // 1. Check if the user is "authenticated" via the token ref
-  const isLoggedIn = !!access.value;
+  const isLoggedIn = !!access.value
 
   // 2. If route requires auth and user isn't logged in -> Login
   if (to.meta.requiresAuth && !isLoggedIn) {
-    return next({ name: 'login' });
+    return next({ name: 'login' })
   }
 
   // 3. If user is logged in and tries to go to Login page -> Home
   if (to.meta.guestOnly && isLoggedIn) {
-    return next({ name: 'home' });
+    return next({ name: 'home' })
   }
 
   // 4. If logged in but no user profile data yet, fetch it
   if (isLoggedIn && !userStore.user) {
     try {
-      await userStore.fetchUser();
+      await userStore.fetchUser()
     } catch (error) {
       // Profile fetch failed (e.g. invalid token), clear and boot to login
-      userStore.logout();
-      return next({ name: 'login' });
+      userStore.logout()
+      return next({ name: 'login' })
     }
   }
 
-  next();
-});
+  next()
+})
 
 export default router

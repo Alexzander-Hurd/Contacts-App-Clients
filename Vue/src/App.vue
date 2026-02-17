@@ -11,14 +11,14 @@ const ui = useUiStore()
 const user = useUserStore()
 
 watchEffect(() => {
-  document.body.style.overflow = ui.sidebarOpen ? 'hidden' : 'auto'
+  document.body.style.overflow = ui.sidebarOpen ? 'hidden' : 'auto';
+  document.documentElement.classList = ui.theme === 'dark' ? 'dark' : 'light'
 })
 </script>
 
 <template>
   <div
-    :class="ui.theme"
-    class="relative mx-auto flex min-h-screen w-full flex-col overflow-x-hidden shadow-2xl dark:bg-slate-900/80"
+    class="relative mx-auto flex min-h-screen w-full flex-col overflow-x-hidden shadow-2xl bg-white/80 dark:bg-slate-900/80"
   >
     <div class="min-h-screen text-slate-900 transition-colors dark:text-slate-100">
       <HeaderBar v-if="user.isAuthenticated" @toggle-menu="ui.toggleSidebar()" />
