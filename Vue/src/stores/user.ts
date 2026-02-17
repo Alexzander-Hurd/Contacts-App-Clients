@@ -3,6 +3,7 @@ import { defineStore } from 'pinia'
 import { client } from '@/api/api'
 import { setTokens, clearTokens, access } from '@/api/auth'
 import type { components } from '@/api/schema'
+import router from '@/router'
 
 type UserProfile = components['schemas']['UserSession'] | null | undefined;
 
@@ -54,6 +55,7 @@ export const useUserStore = defineStore('user', () => {
   async function logout() {
     user.value = null;
     clearTokens();
+    router.push({ name: 'login' });
   }
 
   return {

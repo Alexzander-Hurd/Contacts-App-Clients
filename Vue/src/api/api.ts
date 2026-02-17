@@ -1,6 +1,7 @@
 import createClient from 'openapi-fetch/dist/index.cjs';
 import type { paths } from './schema';
 import { access, refresh, clearTokens, setTokens } from './auth';
+import router from '@/router';
 
 const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5010';
 
@@ -34,6 +35,7 @@ export function createCustomFetch(baseFetch: typeof fetch) {
 		if (!refresh) {
 			console.log('No refresh token - Logout');
 			clearTokens();
+			router.push({ name: 'login' });
 			return response;
 		}
 
@@ -48,6 +50,7 @@ export function createCustomFetch(baseFetch: typeof fetch) {
 		if (!newAccessToken) {
 			console.log('Refresh failed - Logout');
 			clearTokens();
+			router.push({ name: 'login' });
 			return response;
 		}
 
@@ -76,6 +79,7 @@ async function refreshRequest(
 
 		if (!response.ok) {
 			clearTokens();
+			router.push({ name: 'login' });
 			return null;
 		}
 

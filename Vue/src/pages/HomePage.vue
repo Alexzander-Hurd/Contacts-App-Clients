@@ -190,7 +190,7 @@ const openEdit = (contact: Contact) => {
       </div>
       <input
         v-model="searchQuery"
-        class="flex-1 bg-transparent px-3 text-base outline-none dark:text-slate-100"
+        class="flex-1 bg-transparent px-3 text-base outline-none border-none focus:ring-0 dark:text-slate-100"
         placeholder="Search name or number"
       />
     </div>

@@ -10,7 +10,10 @@ const emit = defineEmits<{
     <div class="align-items-center flex flex-row justify-center py-2 w-full">
       <!-- svelte-ignore a11y_consider_explicit_label -->
       <RouterLink to="/">
-        <img class="block w-48 brightness-0 invert" src="/images/logo.png" alt="logo" />
+        
+    <div class="items-center flex flex-row justify-center py-2 w-full">
+        <img class="block w-12" src="/images/logo_mobile.png" alt="logo" /><h2 class="text-2xl font-bold text-white">ContactsApp</h2>
+        </div>
       </RouterLink>
     </div>
     <div class="flex items-center w-full justify-end">

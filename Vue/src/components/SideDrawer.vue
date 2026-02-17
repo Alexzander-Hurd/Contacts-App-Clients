@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, watchEffect, type ComputedRef } from 'vue'
+import { computed,  type ComputedRef } from 'vue'
 import { useUiStore } from '@/stores/ui'
 import { useUserStore } from '@/stores/user'
 import type { components } from '@/api/schema'
@@ -19,10 +19,6 @@ const initials = computed(() => {
   }
   return userContact.value?.email?.charAt(0).toUpperCase() || '?';
 });
-
-watchEffect(() => {
-  document.body.style.overflow = ui.sidebarOpen ? 'hidden' : 'auto'
-})
 </script>
 
 <template>
